@@ -34,7 +34,7 @@ void mul_2d(np::ndarray a, double b) {
     }
 }
 
-np::ndarray mul(np::ndarray a, double b) {
+np::ndarray mul_nd(np::ndarray a, double b) {
     np::dtype dt = np::dtype::get_builtin<double>();
     a = a.astype(dt);
 
@@ -59,5 +59,5 @@ BOOST_PYTHON_MODULE (nptest) {
     np::initialize();
     py::def("test", test);
     py::def("mul_2d", mul_2d);
-    py::def("mul", mul);
+    py::def("mul_nd", mul_nd);
 }

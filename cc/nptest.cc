@@ -16,7 +16,7 @@ np::ndarray test() {
     return a;
 }
 
-void mul(np::ndarray a, double b) {
+void mul_2d(np::ndarray a, double b) {
     int nd = a.get_nd();
     if (nd != 2)
         throw std::runtime_error("a must be two-dimensional");
@@ -28,9 +28,28 @@ void mul(np::ndarray a, double b) {
 
     for (int i = 0; i < shape[0]; ++i) {
         for (int j = 0; j < shape[1]; ++j) {
-//            a[i][j] *= b;
+            a[i][j] *= b;
             *(p + i * shape[1] + j) *= b;
         }
+    }
+}
+
+void mul(np::ndarray a, double b) {
+    if (a.get_dtype() != np::dtype::get_builtin<double>())
+        throw std::runtime_error("a must be float64 array");
+
+    int nd = a.get_nd();
+    auto shape = a.get_shape();
+    unsigned int iter_max = 1;
+
+    for (int i = 0; i < nd; ++i) {
+        iter_max *= shape[i];
+    }
+
+    double *p = reinterpret_cast<double *>(a.get_data());
+
+    for (unsigned int i = 0; i < iter_max; ++i) {
+        *(p + i) *= b;
     }
 }
 
@@ -38,5 +57,6 @@ BOOST_PYTHON_MODULE (nptest) {
     Py_Initialize();
     np::initialize();
     py::def("test", test);
+    py::def("mul_2d", mul_2d);
     py::def("mul", mul);
 }

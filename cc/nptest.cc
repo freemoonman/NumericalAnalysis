@@ -28,15 +28,15 @@ void mul_2d(np::ndarray a, double b) {
 
     for (int i = 0; i < shape[0]; ++i) {
         for (int j = 0; j < shape[1]; ++j) {
-            a[i][j] *= b;
+//            a[i][j] *= b;
             *(p + i * shape[1] + j) *= b;
         }
     }
 }
 
-void mul(np::ndarray a, double b) {
-    if (a.get_dtype() != np::dtype::get_builtin<double>())
-        throw std::runtime_error("a must be float64 array");
+np::ndarray mul(np::ndarray a, double b) {
+    np::dtype dt = np::dtype::get_builtin<double>();
+    a = a.astype(dt);
 
     int nd = a.get_nd();
     auto shape = a.get_shape();
@@ -51,6 +51,7 @@ void mul(np::ndarray a, double b) {
     for (unsigned int i = 0; i < iter_max; ++i) {
         *(p + i) *= b;
     }
+    return a;
 }
 
 BOOST_PYTHON_MODULE (nptest) {

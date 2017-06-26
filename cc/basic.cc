@@ -11,18 +11,16 @@ namespace np = boost::python::numpy;
 
 /* ベクトルa[m...n]とb[m...n]の内積を計算する */
 double vector_dot(np::ndarray &a, np::ndarray &b) {
-    int nd_a = a.get_nd();
-    int nd_b = b.get_nd();
-    if ((nd_a != 1) || (nd_b != 1))
+    if ((a.get_nd() != 1) || (b.get_nd() != 1)) {
         throw std::runtime_error("a must be 1-dimensional");
+    }
 
-    if (a.shape(0) != b.shape(0))
+    if (a.shape(0) != b.shape(0)) {
         throw std::runtime_error("a must be same size");
+    }
 
     double s = 0.0;
-    int size = (int) a.shape(0);
-
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < a.shape(0); i++) {
         s += py::extract<double>(a[i]) * py::extract<double>(b[i]);
     }
 

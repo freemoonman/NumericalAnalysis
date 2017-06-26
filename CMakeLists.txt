@@ -3,7 +3,7 @@ project(NumericalCalculation)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../python/numcalc/basic)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../numcalc/basic)
 
 set(CONDA_ROOT "/opt/miniconda/envs/boost")
 include_directories(${CONDA_ROOT}/include ${CONDA_ROOT}/include/python3.6m)

@@ -9,10 +9,10 @@
 namespace py = boost::python;
 namespace np = boost::python::numpy;
 
-/* ベクトルa[m...n]とb[m...n]の内積を計算する */
+/* ベクトルaとbの内積を計算する */
 double vector_dot(np::ndarray &a, np::ndarray &b) {
     if ((a.get_nd() != 1) || (b.get_nd() != 1)) {
-        throw std::runtime_error("a & b must be 1-dimensional");
+        throw std::runtime_error("a & b must be 1darray");
     }
 
     if (a.shape(0) != b.shape(0)) {
@@ -28,10 +28,10 @@ double vector_dot(np::ndarray &a, np::ndarray &b) {
     return s;
 }
 
-/* 1ノルムの計算 a[m...n] */
+/* 1ノルムの計算 a */
 double vector_norm1(np::ndarray &a) {
     if (a.get_nd() != 1) {
-        throw std::runtime_error("a must be 1-dimensional");
+        throw std::runtime_error("a must be 1darray");
     }
 
     double norm = 0.0;
@@ -43,10 +43,10 @@ double vector_norm1(np::ndarray &a) {
     return norm;
 }
 
-/* 2ノルムの計算 a[m...n] */
+/* 2ノルムの計算 a */
 double vector_norm2(np::ndarray &a) {
     if (a.get_nd() != 1) {
-        throw std::runtime_error("a must be 1-dimensional");
+        throw std::runtime_error("a must be 1darray");
     }
 
     double norm = 0.0;
@@ -60,10 +60,10 @@ double vector_norm2(np::ndarray &a) {
     return norm;
 }
 
-/* 最大値ノルムの計算 a[m...n] */
+/* 最大値ノルムの計算 a */
 double vector_norm_max(np::ndarray &a) {
     if (a.get_nd() != 1) {
-        throw std::runtime_error("a must be 1-dimensional");
+        throw std::runtime_error("a must be 1darray");
     }
 
     std::vector<double> b((unsigned long) a.shape(0));
@@ -79,10 +79,10 @@ double vector_norm_max(np::ndarray &a) {
     return norm;
 }
 
-/* a[m1...m2][n1...n2]とb[m1...m2][n1...n2]の和を求める。結果はcへ */
+/* aとbの和を求める。結果はcへ */
 np::ndarray matrix_sum(np::ndarray &a, np::ndarray &b) {
     if ((a.get_nd() != 2) || (b.get_nd() != 2)) {
-        throw std::runtime_error("a & b must be 2-dimensional");
+        throw std::runtime_error("a & b must be 2darray");
     }
 
     if ((a.shape(0) != b.shape(0)) && (a.shape(1) != b.shape(1))) {
@@ -102,9 +102,10 @@ np::ndarray matrix_sum(np::ndarray &a, np::ndarray &b) {
     return c;
 }
 
+/* aとbの積を求める。結果はcへ */
 np::ndarray matrix_mul(np::ndarray &a, np::ndarray &b) {
     if ((a.get_nd() != 2) || (b.get_nd() != 2)) {
-        throw std::runtime_error("a & b must be 2-dimensional");
+        throw std::runtime_error("a & b must be 2darray");
     }
 
     if ((a.shape(0) != b.shape(0)) && (a.shape(1) != b.shape(1))) {

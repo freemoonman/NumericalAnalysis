@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 PYTHON=/opt/miniconda/envs/boost/bin/python
 

@@ -103,22 +103,24 @@ np::ndarray matrix_sum(np::ndarray &a, np::ndarray &b) {
 }
 
 /* aとbの積を求める。結果はcへ */
-np::ndarray matrix_mul(np::ndarray &a, np::ndarray &b) {
+np::ndarray matrix_product(np::ndarray &a, np::ndarray &b) {
     if ((a.get_nd() != 2) || (b.get_nd() != 2)) {
         throw std::runtime_error("a & b must be 2darray");
     }
 
-    if ((a.shape(0) != b.shape(0)) && (a.shape(1) != b.shape(1))) {
-        throw std::runtime_error("a & b must be same size");
+    if (a.shape(1) != b.shape(0)) {
+        throw std::runtime_error("a col size & b row size must be same size");
     }
 
-    py::tuple shape = py::make_tuple(a.shape(0), a.shape(1));
+    py::tuple shape = py::make_tuple(a.shape(0), b.shape(1));
     np::dtype dtype = np::dtype::get_builtin<double>();
     np::ndarray c = np::zeros(shape, dtype);
 
     for (int i = 0; i < a.shape(0); i++) {
-        for (int j = 0; j < a.shape(1); j++) {
-            c[i][j] = a[i][j] * b[i][j];
+        for (int j = 0; j < b.shape(1); j++) {
+            for (int k = 0; k < a.shape(1); k++) {
+                c[i][j] += a[i][k] * b[k][j];
+            }
         }
     }
 
@@ -133,5 +135,5 @@ BOOST_PYTHON_MODULE (_basic) {
     py::def("vector_norm2", &vector_norm2);
     py::def("vector_norm_max", &vector_norm_max);
     py::def("matrix_sum", &matrix_sum);
-    py::def("matrix_mul", &matrix_mul);
+    py::def("matrix_product", &matrix_product);
 }

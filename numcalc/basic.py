@@ -89,3 +89,31 @@ def matrix_product(a, b):
     :return: 2darray
     """
     return _basic.matrix_product(a, b)
+
+
+def matrix_norm1(a):
+    """
+    1ノルムの計算
+
+    Parameters
+    ----------
+    :param a: 2darray
+    Returns
+    -------
+    :return: float
+    """
+    return _basic.matrix_norm1(a)
+
+
+def matrix_norm_max(a):
+    """
+    最大値ノルムの計算
+
+    Parameters
+    ----------
+    :param a: 2darray
+    Returns
+    -------
+    :return: float
+    """
+    return _basic.matrix_norm_max(a)

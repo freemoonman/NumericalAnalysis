@@ -19,6 +19,10 @@ double vector_dot(np::ndarray &a, np::ndarray &b) {
         throw std::runtime_error("a & b must be same size");
     }
 
+    np::dtype dtype = np::dtype::get_builtin<double>();
+    a = a.astype(dtype);
+    b = b.astype(dtype);
+
     double s = 0.0;
 
     for (int i = 0; i < a.shape(0); i++) {
@@ -34,6 +38,9 @@ double vector_norm1(np::ndarray &a) {
         throw std::runtime_error("a must be 1darray");
     }
 
+    np::dtype dtype = np::dtype::get_builtin<double>();
+    a = a.astype(dtype);
+
     double norm = 0.0;
 
     for (int i = 0; i < a.shape(0); i++) {
@@ -48,6 +55,9 @@ double vector_norm2(np::ndarray &a) {
     if (a.get_nd() != 1) {
         throw std::runtime_error("a must be 1darray");
     }
+
+    np::dtype dtype = np::dtype::get_builtin<double>();
+    a = a.astype(dtype);
 
     double norm = 0.0;
 
@@ -65,6 +75,9 @@ double vector_norm_max(np::ndarray &a) {
     if (a.get_nd() != 1) {
         throw std::runtime_error("a must be 1darray");
     }
+
+    np::dtype dtype = np::dtype::get_builtin<double>();
+    a = a.astype(dtype);
 
     std::vector<double> b((unsigned long) a.shape(0));
 
@@ -127,6 +140,56 @@ np::ndarray matrix_product(np::ndarray &a, np::ndarray &b) {
     return c;
 }
 
+/* 1ノルムの計算 a */
+double matrix_norm1(np::ndarray &a) {
+    if (a.get_nd() != 2) {
+        throw std::runtime_error("a must be 2darray");
+    }
+
+    np::dtype dtype = np::dtype::get_builtin<double>();
+    a = a.astype(dtype);
+
+    std::vector<double> b((unsigned long) a.shape(1));
+
+    for (int j = 0; j < a.shape(1); j++) {
+        b[j] = 0.0;
+        for (int i = 0; i < a.shape(0); i++) {
+            b[j] += std::abs(py::extract<double>(a[i][j]));
+        }
+    }
+
+    std::sort(b.begin(), b.end());
+
+    double norm = b.back();
+
+    return norm;
+}
+
+/* 最大値ノルムの計算 a */
+double matrix_norm_max(np::ndarray &a) {
+    if (a.get_nd() != 2) {
+        throw std::runtime_error("a must be 2darray");
+    }
+
+    np::dtype dtype = np::dtype::get_builtin<double>();
+    a = a.astype(dtype);
+
+    std::vector<double> b((unsigned long) a.shape(0));
+
+    for (int i = 0; i < a.shape(0); i++) {
+        b[i] = 0.0;
+        for (int j = 0; j < a.shape(1); j++) {
+            b[i] += std::abs(py::extract<double>(a[i][j]));
+        }
+    }
+
+    std::sort(b.begin(), b.end());
+
+    double norm = b.back();
+
+    return norm;
+}
+
 BOOST_PYTHON_MODULE (_basic) {
     Py_Initialize();
     np::initialize();
@@ -136,4 +199,6 @@ BOOST_PYTHON_MODULE (_basic) {
     py::def("vector_norm_max", &vector_norm_max);
     py::def("matrix_sum", &matrix_sum);
     py::def("matrix_product", &matrix_product);
+    py::def("matrix_norm1", &matrix_norm1);
+    py::def("matrix_norm_max", &matrix_norm_max);
 }

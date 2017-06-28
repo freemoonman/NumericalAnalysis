@@ -1,7 +1,7 @@
 import numpy as np
 import numcalc as nc
 
-a = np.array([(10-i)/20*pow(-1, i) for i in range(1, 7)])
+a = np.array([(10 - i) / 20 * pow(-1, i) for i in range(1, 7)])
 
 print(f"a = {a}")
 print(f"aのL1ノルムは{nc.basic.vector_norm1(a)}です．")

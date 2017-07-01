@@ -1,6 +1,7 @@
 """
 Wrapper for shared object
 """
+
 from numcalc import _basic  # noqa
 
 

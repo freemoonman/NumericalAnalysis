@@ -3,14 +3,14 @@ project(numcalc)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../numcalc/basic)
+include_directories("/usr/local/opt/openssl/include")
+include_directories("/usr/local/opt/sqlite/include")
+include_directories("/usr/local/Cellar/python3/3.6.1/Frameworks/Python.framework/Versions/3.6/include/python3.6m")
 
-set(CONDA_ROOT "/opt/miniconda/envs/boost")
-include_directories(${CONDA_ROOT}/include ${CONDA_ROOT}/include/python3.6m)
-link_directories(${CONDA_ROOT}/lib)
-
-set(BOOST_LIBS python3.6m boost_python3 boost_numpy3)
 add_library(_basic SHARED numcalc/cc/_basic.cc)
-target_link_libraries(_basic ${BOOST_LIBS})
 set_target_properties(_basic PROPERTIES PREFIX "")
 set_target_properties(_basic PROPERTIES SUFFIX ".so")
+
+add_library(_linsolve SHARED numcalc/cc/_linsolve.cc)
+set_target_properties(_linsolve PROPERTIES PREFIX "")
+set_target_properties(_linsolve PROPERTIES SUFFIX ".so")

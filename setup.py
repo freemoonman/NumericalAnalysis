@@ -9,9 +9,10 @@ setup(
     ext_modules=[
         Extension("numcalc._basic",
                   sources=["numcalc/cc/_basic.cc"],
-                  libraries=["python3.6m",
-                             "boost_python3",
-                             "boost_numpy3"])
+                  extra_compile_args=["-std=c++14"]),
+        Extension("numcalc._linsolve",
+                  sources=["numcalc/cc/_linsolve.cc"],
+                  extra_compile_args=["-std=c++14"]),
     ],
     requires=['numpy']
 )

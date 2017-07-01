@@ -2,67 +2,50 @@
 // Created by YAMAMOTO Masaya on 2017/06/26.
 //
 
-#include <iostream>
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
-namespace py = boost::python;
-namespace np = boost::python::numpy;
+namespace py = pybind11;
 
 /* ベクトルaとbの内積を計算する */
-double vector_dot(np::ndarray &a, np::ndarray &b) {
-    if ((a.get_nd() != 1) || (b.get_nd() != 1)) {
-        throw std::runtime_error("a & b must be 1darray");
-    }
+double vector_dot(py::array_t<double> &a, py::array_t<double> &b) {
+    auto proxy_a = a.unchecked<1>();
+    auto proxy_b = b.unchecked<1>();
 
-    if (a.shape(0) != b.shape(0)) {
+    if (proxy_a.size() != proxy_b.size()) {
         throw std::runtime_error("a & b must be same size");
     }
 
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    a = a.astype(dtype);
-    b = b.astype(dtype);
-
     double s = 0.0;
 
-    for (int i = 0; i < a.shape(0); i++) {
-        s += py::extract<double>(a[i]) * py::extract<double>(b[i]);
+    for (size_t i = 0; i < proxy_a.size(); i++) {
+        s += proxy_a(i) * proxy_b(i);
     }
 
     return s;
 }
 
 /* 1ノルムの計算 a */
-double vector_norm1(np::ndarray &a) {
-    if (a.get_nd() != 1) {
-        throw std::runtime_error("a must be 1darray");
-    }
-
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    a = a.astype(dtype);
+double vector_norm1(py::array_t<double> &a) {
+    auto proxy_a = a.unchecked<1>();
 
     double norm = 0.0;
 
-    for (int i = 0; i < a.shape(0); i++) {
-        norm += std::abs(py::extract<double>(a[i]));
+    for (size_t i = 0; i < proxy_a.size(); i++) {
+        norm += std::abs(proxy_a(i));
     }
 
     return norm;
 }
 
 /* 2ノルムの計算 a */
-double vector_norm2(np::ndarray &a) {
-    if (a.get_nd() != 1) {
-        throw std::runtime_error("a must be 1darray");
-    }
-
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    a = a.astype(dtype);
+double vector_norm2(py::array_t<double> &a) {
+    auto proxy_a = a.unchecked<1>();
 
     double norm = 0.0;
 
-    for (int i = 0; i < a.shape(0); i++) {
-        norm += py::extract<double>(a[i]) * py::extract<double>(a[i]);
+    for (size_t i = 0; i < proxy_a.size(); i++) {
+        norm += proxy_a(i) * proxy_a(i);
     }
 
     norm = std::sqrt(norm);
@@ -71,18 +54,13 @@ double vector_norm2(np::ndarray &a) {
 }
 
 /* 最大値ノルムの計算 a */
-double vector_norm_max(np::ndarray &a) {
-    if (a.get_nd() != 1) {
-        throw std::runtime_error("a must be 1darray");
-    }
+double vector_norm_max(py::array_t<double> &a) {
+    auto proxy_a = a.unchecked<1>();
 
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    a = a.astype(dtype);
+    std::vector<double> b(proxy_a.size());
 
-    std::vector<double> b((unsigned long) a.shape(0));
-
-    for (int i = 0; i < a.shape(0); i++) {
-        b[i] = std::abs(py::extract<double>(a[i]));
+    for (size_t i = 0; i < proxy_a.size(); i++) {
+        b[i] = std::abs(proxy_a(i));
     }
 
     std::sort(b.begin(), b.end());
@@ -93,22 +71,21 @@ double vector_norm_max(np::ndarray &a) {
 }
 
 /* aとbの和を求める。結果はcへ */
-np::ndarray matrix_sum(np::ndarray &a, np::ndarray &b) {
-    if ((a.get_nd() != 2) || (b.get_nd() != 2)) {
-        throw std::runtime_error("a & b must be 2darray");
-    }
+py::array_t<double> matrix_sum(py::array_t<double> &a, py::array_t<double> &b) {
+    auto proxy_a = a.unchecked<2>();
+    auto proxy_b = b.unchecked<2>();
 
-    if ((a.shape(0) != b.shape(0)) && (a.shape(1) != b.shape(1))) {
+    if ((proxy_a.shape(0) != proxy_b.shape(0)) &&
+        (proxy_a.shape(1) != proxy_b.shape(1))) {
         throw std::runtime_error("a & b must be same size");
     }
 
-    py::tuple shape = py::make_tuple(a.shape(0), a.shape(1));
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    np::ndarray c = np::zeros(shape, dtype);
+    py::array_t<double> c({proxy_a.shape(0), proxy_a.shape(1)});
+    auto proxy_c = c.mutable_unchecked<2>();
 
-    for (int i = 0; i < a.shape(0); i++) {
-        for (int j = 0; j < a.shape(1); j++) {
-            c[i][j] = a[i][j] + b[i][j];
+    for (size_t i = 0; i < proxy_a.shape(0); i++) {
+        for (size_t j = 0; j < proxy_a.shape(1); j++) {
+            proxy_c(i, j) = proxy_a(i, j) + proxy_b(i, j);
         }
     }
 
@@ -116,23 +93,22 @@ np::ndarray matrix_sum(np::ndarray &a, np::ndarray &b) {
 }
 
 /* aとbの積を求める。結果はcへ */
-np::ndarray matrix_product(np::ndarray &a, np::ndarray &b) {
-    if ((a.get_nd() != 2) || (b.get_nd() != 2)) {
-        throw std::runtime_error("a & b must be 2darray");
-    }
+py::array_t<double>
+matrix_product(py::array_t<double> &a, py::array_t<double> &b) {
+    auto proxy_a = a.unchecked<2>();
+    auto proxy_b = b.unchecked<2>();
 
-    if (a.shape(1) != b.shape(0)) {
+    if ((proxy_a.shape(1) != proxy_b.shape(0))) {
         throw std::runtime_error("a col size & b row size must be same size");
     }
 
-    py::tuple shape = py::make_tuple(a.shape(0), b.shape(1));
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    np::ndarray c = np::zeros(shape, dtype);
+    py::array_t<double> c({proxy_a.shape(0), proxy_b.shape(1)});
+    auto proxy_c = c.mutable_unchecked<2>();
 
-    for (int i = 0; i < a.shape(0); i++) {
-        for (int j = 0; j < b.shape(1); j++) {
-            for (int k = 0; k < a.shape(1); k++) {
-                c[i][j] += a[i][k] * b[k][j];
+    for (size_t i = 0; i < proxy_a.shape(0); i++) {
+        for (size_t j = 0; j < proxy_b.shape(1); j++) {
+            for (size_t k = 0; k < proxy_a.shape(1); k++) {
+                proxy_c(i, j) += proxy_a(i, k) * proxy_b(k, j);
             }
         }
     }
@@ -141,20 +117,15 @@ np::ndarray matrix_product(np::ndarray &a, np::ndarray &b) {
 }
 
 /* 1ノルムの計算 a */
-double matrix_norm1(np::ndarray &a) {
-    if (a.get_nd() != 2) {
-        throw std::runtime_error("a must be 2darray");
-    }
+double matrix_norm1(py::array_t<double> &a) {
+    auto proxy_a = a.unchecked<2>();
 
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    a = a.astype(dtype);
+    std::vector<double> b(proxy_a.shape(1));
 
-    std::vector<double> b((unsigned long) a.shape(1));
-
-    for (int j = 0; j < a.shape(1); j++) {
+    for (size_t j = 0; j < proxy_a.shape(1); j++) {
         b[j] = 0.0;
-        for (int i = 0; i < a.shape(0); i++) {
-            b[j] += std::abs(py::extract<double>(a[i][j]));
+        for (size_t i = 0; i < proxy_a.shape(0); i++) {
+            b[j] += std::abs(proxy_a(i, j));
         }
     }
 
@@ -166,20 +137,15 @@ double matrix_norm1(np::ndarray &a) {
 }
 
 /* 最大値ノルムの計算 a */
-double matrix_norm_max(np::ndarray &a) {
-    if (a.get_nd() != 2) {
-        throw std::runtime_error("a must be 2darray");
-    }
+double matrix_norm_max(py::array_t<double> &a) {
+    auto proxy_a = a.unchecked<2>();
 
-    np::dtype dtype = np::dtype::get_builtin<double>();
-    a = a.astype(dtype);
+    std::vector<double> b(proxy_a.shape(0));
 
-    std::vector<double> b((unsigned long) a.shape(0));
-
-    for (int i = 0; i < a.shape(0); i++) {
+    for (size_t i = 0; i < proxy_a.shape(0); i++) {
         b[i] = 0.0;
-        for (int j = 0; j < a.shape(1); j++) {
-            b[i] += std::abs(py::extract<double>(a[i][j]));
+        for (size_t j = 0; j < proxy_a.shape(1); j++) {
+            b[i] += std::abs(proxy_a(i, j));
         }
     }
 
@@ -190,15 +156,15 @@ double matrix_norm_max(np::ndarray &a) {
     return norm;
 }
 
-BOOST_PYTHON_MODULE (_basic) {
-    Py_Initialize();
-    np::initialize();
-    py::def("vector_dot", &vector_dot);
-    py::def("vector_norm1", &vector_norm1);
-    py::def("vector_norm2", &vector_norm2);
-    py::def("vector_norm_max", &vector_norm_max);
-    py::def("matrix_sum", &matrix_sum);
-    py::def("matrix_product", &matrix_product);
-    py::def("matrix_norm1", &matrix_norm1);
-    py::def("matrix_norm_max", &matrix_norm_max);
+PYBIND11_PLUGIN (_basic) {
+    py::module m("_basic");
+    m.def("vector_dot", &vector_dot);
+    m.def("vector_norm1", &vector_norm1);
+    m.def("vector_norm2", &vector_norm2);
+    m.def("vector_norm_max", &vector_norm_max);
+    m.def("matrix_sum", &matrix_sum);
+    m.def("matrix_product", &matrix_product);
+    m.def("matrix_norm1", &matrix_norm1);
+    m.def("matrix_norm_max", &matrix_norm_max);
+    return m.ptr();
 }

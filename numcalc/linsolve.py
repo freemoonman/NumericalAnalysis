@@ -29,13 +29,5 @@ def gauss(a, b):
     return _linsolve.gauss(a, b)
 
 
-def lup_decomp(a):
-    return _linsolve.lup_decomp(a)
-
-
-def lup_solve(a, b, p):
-    return _linsolve.lup_solve(a, b, p)
-
-
 def lup(a, b):
     return _linsolve.lup(a, b)

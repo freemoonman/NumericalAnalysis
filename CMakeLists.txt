@@ -3,9 +3,7 @@ project(numcalc)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories("/usr/local/opt/openssl/include")
-include_directories("/usr/local/opt/sqlite/include")
-include_directories("/usr/local/Cellar/python3/3.6.1/Frameworks/Python.framework/Versions/3.6/include/python3.6m")
+include_directories("env/include/python3.6m")
 
 add_library(_basic SHARED numcalc/cc/_basic.cc)
 set_target_properties(_basic PROPERTIES PREFIX "")

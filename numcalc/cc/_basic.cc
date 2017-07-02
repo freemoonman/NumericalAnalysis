@@ -6,46 +6,47 @@
 #include <pybind11/numpy.h>
 
 namespace py = pybind11;
+using array_d = py::array_t<double>;
 
 /* ベクトルaとbの内積を計算する */
-double vector_dot(py::array_t<double> &a, py::array_t<double> &b) {
-    auto proxy_a = a.unchecked<1>();
-    auto proxy_b = b.unchecked<1>();
+double vector_dot(array_d &vec_a, array_d &vec_b) {
+    auto a = vec_a.unchecked<1>();
+    auto b = vec_b.unchecked<1>();
 
-    if (proxy_a.size() != proxy_b.size()) {
-        throw std::runtime_error("a & b must be same size");
+    if (a.size() != b.size()) {
+        throw std::runtime_error("vec_a & vec_b must be same size");
     }
 
     double s = 0.0;
 
-    for (size_t i = 0; i < proxy_a.size(); i++) {
-        s += proxy_a(i) * proxy_b(i);
+    for (size_t i = 0; i < a.size(); i++) {
+        s += a(i) * b(i);
     }
 
     return s;
 }
 
 /* 1ノルムの計算 a */
-double vector_norm1(py::array_t<double> &a) {
-    auto proxy_a = a.unchecked<1>();
+double vector_norm1(array_d &vec_a) {
+    auto a = vec_a.unchecked<1>();
 
     double norm = 0.0;
 
-    for (size_t i = 0; i < proxy_a.size(); i++) {
-        norm += std::abs(proxy_a(i));
+    for (size_t i = 0; i < a.size(); i++) {
+        norm += std::abs(a(i));
     }
 
     return norm;
 }
 
 /* 2ノルムの計算 a */
-double vector_norm2(py::array_t<double> &a) {
-    auto proxy_a = a.unchecked<1>();
+double vector_norm2(array_d &vec_a) {
+    auto a = vec_a.unchecked<1>();
 
     double norm = 0.0;
 
-    for (size_t i = 0; i < proxy_a.size(); i++) {
-        norm += proxy_a(i) * proxy_a(i);
+    for (size_t i = 0; i < a.size(); i++) {
+        norm += a(i) * a(i);
     }
 
     norm = std::sqrt(norm);
@@ -54,13 +55,13 @@ double vector_norm2(py::array_t<double> &a) {
 }
 
 /* 最大値ノルムの計算 a */
-double vector_norm_max(py::array_t<double> &a) {
-    auto proxy_a = a.unchecked<1>();
+double vector_norm_max(array_d &vec_a) {
+    auto a = vec_a.unchecked<1>();
 
-    std::vector<double> b(proxy_a.size());
+    std::vector<double> b(a.size());
 
-    for (size_t i = 0; i < proxy_a.size(); i++) {
-        b[i] = std::abs(proxy_a(i));
+    for (size_t i = 0; i < a.size(); i++) {
+        b[i] = std::abs(a(i));
     }
 
     std::sort(b.begin(), b.end());
@@ -71,61 +72,61 @@ double vector_norm_max(py::array_t<double> &a) {
 }
 
 /* aとbの和を求める。結果はcへ */
-py::array_t<double> matrix_sum(py::array_t<double> &a, py::array_t<double> &b) {
-    auto proxy_a = a.unchecked<2>();
-    auto proxy_b = b.unchecked<2>();
+array_d matrix_sum(array_d &vec_a, array_d &vec_b) {
+    auto a = vec_a.unchecked<2>();
+    auto b = vec_b.unchecked<2>();
 
-    if ((proxy_a.shape(0) != proxy_b.shape(0)) &&
-        (proxy_a.shape(1) != proxy_b.shape(1))) {
-        throw std::runtime_error("a & b must be same size");
+    if ((a.shape(0) != b.shape(0)) &&
+        (a.shape(1) != b.shape(1))) {
+        throw std::runtime_error("vec_a & vec_b must be same size");
     }
 
-    py::array_t<double> c({proxy_a.shape(0), proxy_a.shape(1)});
-    auto proxy_c = c.mutable_unchecked<2>();
+    array_d mat_c({a.shape(0), a.shape(1)});
+    auto c = mat_c.mutable_unchecked<2>();
 
-    for (size_t i = 0; i < proxy_a.shape(0); i++) {
-        for (size_t j = 0; j < proxy_a.shape(1); j++) {
-            proxy_c(i, j) = proxy_a(i, j) + proxy_b(i, j);
+    for (size_t i = 0; i < a.shape(0); i++) {
+        for (size_t j = 0; j < a.shape(1); j++) {
+            c(i, j) = a(i, j) + b(i, j);
         }
     }
 
-    return c;
+    return mat_c;
 }
 
 /* aとbの積を求める。結果はcへ */
-py::array_t<double>
-matrix_product(py::array_t<double> &a, py::array_t<double> &b) {
-    auto proxy_a = a.unchecked<2>();
-    auto proxy_b = b.unchecked<2>();
+array_d matrix_product(array_d &mat_a, array_d &mat_b) {
+    auto a = mat_a.unchecked<2>();
+    auto b = mat_b.unchecked<2>();
 
-    if ((proxy_a.shape(1) != proxy_b.shape(0))) {
-        throw std::runtime_error("a col size & b row size must be same size");
+    if ((a.shape(1) != b.shape(0))) {
+        throw std::runtime_error("mat_a col & mat_b row must be same size");
     }
 
-    py::array_t<double> c({proxy_a.shape(0), proxy_b.shape(1)});
-    auto proxy_c = c.mutable_unchecked<2>();
+    array_d mat_c({a.shape(0), b.shape(1)});
+    auto c = mat_c.mutable_unchecked<2>();
 
-    for (size_t i = 0; i < proxy_a.shape(0); i++) {
-        for (size_t j = 0; j < proxy_b.shape(1); j++) {
-            for (size_t k = 0; k < proxy_a.shape(1); k++) {
-                proxy_c(i, j) += proxy_a(i, k) * proxy_b(k, j);
+    for (size_t i = 0; i < a.shape(0); i++) {
+        for (size_t j = 0; j < b.shape(1); j++) {
+            c(i, j) = 0;
+            for (size_t k = 0; k < a.shape(1); k++) {
+                c(i, j) += a(i, k) * b(k, j);
             }
         }
     }
 
-    return c;
+    return mat_c;
 }
 
 /* 1ノルムの計算 a */
-double matrix_norm1(py::array_t<double> &a) {
-    auto proxy_a = a.unchecked<2>();
+double matrix_norm1(array_d &mat_a) {
+    auto a = mat_a.unchecked<2>();
 
-    std::vector<double> b(proxy_a.shape(1));
+    std::vector<double> b(a.shape(1));
 
-    for (size_t j = 0; j < proxy_a.shape(1); j++) {
+    for (size_t j = 0; j < a.shape(1); j++) {
         b[j] = 0.0;
-        for (size_t i = 0; i < proxy_a.shape(0); i++) {
-            b[j] += std::abs(proxy_a(i, j));
+        for (size_t i = 0; i < a.shape(0); i++) {
+            b[j] += std::abs(a(i, j));
         }
     }
 
@@ -137,15 +138,15 @@ double matrix_norm1(py::array_t<double> &a) {
 }
 
 /* 最大値ノルムの計算 a */
-double matrix_norm_max(py::array_t<double> &a) {
-    auto proxy_a = a.unchecked<2>();
+double matrix_norm_max(array_d &mat_a) {
+    auto a = mat_a.unchecked<2>();
 
-    std::vector<double> b(proxy_a.shape(0));
+    std::vector<double> b(a.shape(0));
 
-    for (size_t i = 0; i < proxy_a.shape(0); i++) {
+    for (size_t i = 0; i < a.shape(0); i++) {
         b[i] = 0.0;
-        for (size_t j = 0; j < proxy_a.shape(1); j++) {
-            b[i] += std::abs(proxy_a(i, j));
+        for (size_t j = 0; j < a.shape(1); j++) {
+            b[i] += std::abs(a(i, j));
         }
     }
 

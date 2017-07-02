@@ -3,7 +3,8 @@ project(numcalc)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories("env/include/python3.6m")
+include_directories("/opt/pyenv/versions/miniconda3-latest/envs/pybind/include/python3.6m")
+include_directories("/opt/pyenv/versions/miniconda3-latest/envs/pybind/include")
 
 add_library(_basic SHARED numcalc/cc/_basic.cc)
 set_target_properties(_basic PROPERTIES PREFIX "")
